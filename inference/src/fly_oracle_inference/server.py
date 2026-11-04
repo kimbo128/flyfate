@@ -2,6 +2,7 @@
 import base64
 import json
 import os
+import random
 import threading
 import time
 import traceback
@@ -224,6 +225,16 @@ def oracle_json(oid: str):
     if not found:
         return JSONResponse({'error': 'not found'}, status_code=404)
     return {k: found[k] for k in ('id', 'question', 'answer', 'reading')}
+
+
+@app.get('/api/others')
+def others(n: int = Query(3, ge=1, le=6)):
+    """A few questions other people asked, for the start page: a random pick from the newest public answers
+    (shared or saved, and clean), so the page changes from visit to visit even while the archive is small."""
+    rows, _ = store.archive(limit=30)
+    picked = random.sample(rows, min(n, len(rows)))
+    return JSONResponse([{'id': r['id'], 'question': r['question'], 'kind': r['kind']} for r in picked],
+                        headers={'Cache-Control': 'no-store'})
 
 
 @app.post('/api/oracle/{oid}/shared')

@@ -20,6 +20,8 @@ noch `fly-oracle`/`fly_oracle_inference`.
 - Index/Sitemap/Archiv nur fuer Antworten, die jemand aktiv geteilt oder per E-Mail gespeichert hat (`POST /api/oracle/{id}/shared`, zeichnet
   dabei gleich die Karte) und die sauber sind (`share.PROFANE`). Fragen stellen bleibt privat (`noindex`), Teilen
   macht oeffentlich.
+- "Others asked" auf der Startseite: `GET /api/others?n=3` = Zufallsauswahl aus den 30 neuesten oeffentlichen
+  Antworten (nur Frage, id, Typ). Antippen = wie ein geteilter Link (`pushState /o/{id}` + `fromLink`), am Handy 2.
 - Archiv (`archive.py`, eigenes Server-HTML ohne 3D/JS): `/answers` (neueste zuerst, `?page=`), `/answers/{typ}`
   pro Entscheidungstyp mit Erklaerung, Suche `?q=` (LIKE ueber Frage + Antwort, `noindex`). JSON-LD
   `CollectionPage` + `BreadcrumbList`, Typ-Seiten in der Sitemap. Vite leitet `/answers` im Dev an 8000 weiter.

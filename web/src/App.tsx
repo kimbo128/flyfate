@@ -1,9 +1,10 @@
 import { useProgress } from '@react-three/drei'
 import { useEffect, useRef, useState, type CSSProperties, type FormEvent, type Ref } from 'react'
 import { brain, focusRegion, highlight, type Phase } from './brain/activity'
-import { aboutRoi, cellFamily, groupOf, plainName, roiLabel } from './brain/regions'
+import { GROUPS, aboutRoi, cellFamily, groupOf, plainName, roiLabel } from './brain/regions'
 import { Scene } from './brain/Scene'
-import { ask, fetchShared, markShared, saveToArchive, whoAmI, type Reading } from './oracle/client'
+import { ask, fetchOthers, fetchShared, markShared, saveToArchive, whoAmI, type OtherQuestion, type Reading }
+  from './oracle/client'
 import { chime, isMuted, pop, setMuted, startBuzz, stopBuzz, voice } from './sfx'
 import { cancelClip, finishClip, setClipText, startClip, videoType } from './video'
 
@@ -126,6 +127,8 @@ export default function App() {
   // The 9:16 video of this answer (video.ts): recorded while Melanie thinks, ready shortly after the verdict.
   const [video, setVideo] = useState<File | null>(null)
   const [makingVideo, setMakingVideo] = useState(false)
+  // A few questions other people asked, on the start page (fresh pick each time Melanie is waiting).
+  const [others, setOthers] = useState<OtherQuestion[]>([])
   const [fromLink, setFromLink] = useState(() => SHARED_PATH.test(location.pathname))
   const cancel = useRef<() => void>(undefined)
   const input = useRef<HTMLInputElement>(null)
@@ -202,6 +205,17 @@ export default function App() {
       gone = true
     }
   }, [loaded, fromLink])
+
+  useEffect(() => {
+    if (phase !== 'idle' || !loaded) return
+    let gone = false
+    void fetchOthers().then((found) => {
+      if (!gone) setOthers(found)
+    })
+    return () => {
+      gone = true
+    }
+  }, [phase, loaded])
 
   // On each verdict: who is logged in, and whether this answer is already in their collection.
   useEffect(() => {
@@ -299,6 +313,12 @@ export default function App() {
       },
       onOffline: () => setOffline(true),
     })
+  }
+
+  // Someone else's question from the start page: show Melanie's verdict on it, like arriving on its link.
+  function openOther(id: string) {
+    history.pushState(null, '', `/o/${id}`)
+    setFromLink(true)
   }
 
   function again() {
@@ -462,6 +482,21 @@ export default function App() {
                     {waitSeconds > 0 ? formatWait(waitSeconds) : 'Ask'}
                   </button>
                 </form>
+                {others.length > 0 && (
+                  <nav className="others" aria-label="Questions others asked">
+                    <p>Others asked</p>
+                    <ul>
+                      {others.map((o) => (
+                        <li key={o.id}>
+                          <button className="other" onClick={() => openOther(o.id)}
+                            style={{ '--tint': GROUPS.find((g) => g.kind.id === o.kind)?.color ?? '#ffc83d' } as CSSProperties}>
+                            {o.question}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </nav>
+                )}
               </>
             )}
 

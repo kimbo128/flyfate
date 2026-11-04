@@ -39,6 +39,18 @@ export async function fetchShared(id: string): Promise<SharedOracle | null> {
   }
 }
 
+export type OtherQuestion = { id: string; question: string; kind: string | null }
+
+// A few questions other people asked and shared, for the start page. Empty on any failure.
+export async function fetchOthers(): Promise<OtherQuestion[]> {
+  try {
+    const res = await fetch('/api/others?n=3')
+    return res.ok ? ((await res.json()) as OtherQuestion[]) : []
+  } catch {
+    return []
+  }
+}
+
 // The visitor shared this answer: only shared answers may be indexed by search engines.
 export function markShared(id: string) {
   void fetch(`/api/oracle/${encodeURIComponent(id)}/shared`, { method: 'POST' }).catch(() => undefined)

@@ -200,6 +200,27 @@ button.chip:active, a.chip:active { translate: 0 2px; box-shadow: 0 1px 0 var(--
 }
 .ask input::placeholder { color: var(--grape-soft); opacity: 0.7; }
 
+/* Questions others asked: small stickers under the question box, each opens Melanie's verdict on it. */
+.others { margin-top: 1.1rem; }
+.others p { margin: 0 0 0.45rem; font-size: 0.8125rem; font-weight: 500; color: var(--grape-soft); }
+.others ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.others li { min-width: 0; max-width: 100%; }
+button.other {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  padding: 0.5em 0.85em;
+  border-width: 2.5px;
+  border-radius: 999px;
+  background-color: color-mix(in srgb, var(--tint) 28%, white);
+  box-shadow: 0 3px 0 var(--grape);
+}
+button.other:hover { background-color: color-mix(in srgb, var(--tint) 48%, white); rotate: -1.5deg; box-shadow: 0 5px 0 var(--grape); }
+button.other:active { translate: 0 2px; box-shadow: 0 1px 0 var(--grape); }
+
 /* Health-bar style neuron meter. */
 .meter {
   height: 1.3rem;
@@ -433,6 +454,8 @@ button.link:active { transform: none; }
   .chip .short { display: inline; }
   .ask { flex-direction: column; }
   .ask input { min-height: 3rem; }
+  /* Two are enough on a phone: the brain keeps its room. */
+  .others li:nth-child(n + 3) { display: none; }
   .dialog { padding: 1.7rem 1.2rem 1.2rem; }
   /* Compact brain reading on phones: plain names only, so the brain stays visible. */
   .kind { margin-bottom: 0.8rem; }
