@@ -73,8 +73,11 @@ noch `fly-oracle`/`fly_oracle_inference`.
 - Schutz (`inference/.../guard.py`, im Speicher, eine Instanz): Warteschlange (max. 50), pro IP 20 Fragen/10 Min
   und 150/Tag, global 20000/Tag, ernste Themen bekommen einen Hinweis statt der Fliege. Die Schlange haelt nur
   Lesen + Generieren (~1 s); das Abspielen der Antwort laeuft danach ausserhalb (`server.speak`).
-- TODO vor 2026-12-01: `railway.json` (Config as Code) laeuft aus. `railway config migrate` benennt den Service
-  falsch und kennt Volume/Restart-Policy nicht: erst `--service fly-oracle`, Plan pruefen, dann anwenden.
+- Build- und Deploy-Einstellungen liegen direkt am Service (kein `railway.json` mehr, Config as Code endet
+  2026-12-01): `dockerfilePath=Dockerfile` (damit baut Railway das Dockerfile, auch wenn `builder` RAILPACK
+  anzeigt), Healthcheck `/api/health` 120 s, Restart ON_FAILURE x3, App Sleeping an. Gesetzt per
+  `railway api` (`serviceInstanceUpdate`), pruefen mit der `serviceInstance`-Query. IaC (`.railway/railway.ts`)
+  bewusst nicht: `railway config pull` liest den Stand korrekt inkl. Volume, aber "nicht deklariert = loeschen".
 
 ## Daten (gross, nicht in git)
 - Laufzeit (`inference/.../runtime.py`, laeuft beim Serverstart): FLM-Code, Graph via FLMs Skript,
