@@ -100,6 +100,59 @@ body::after {
 .tools { display: flex; gap: 0.5rem; }
 .chip .short { display: none; }
 
+/* The sky picker: a round swatch of the current sky, a small menu of the others. */
+.sky-pick { position: relative; }
+button.swatch {
+  width: 2.35rem;
+  height: 2.35rem;
+  padding: 0;
+  border-radius: 50%;
+  background-image: var(--gloss), linear-gradient(var(--top), var(--bottom));
+}
+.sky-menu {
+  position: absolute;
+  top: calc(100% + 0.6rem);
+  left: 0;
+  z-index: 5;
+  display: grid;
+  gap: 0.2rem;
+  min-width: 12rem;
+  padding: 0.45rem;
+  background: var(--cloud);
+  border: var(--edge);
+  border-radius: 20px;
+  box-shadow: var(--lift);
+  transform-origin: top left;
+  animation: pop-in 0.3s var(--spring) both;
+}
+.sky-menu button {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.5rem 0.7rem;
+  font-size: 0.9375rem;
+  text-align: left;
+  border: 0;
+  border-radius: 12px;
+  box-shadow: none;
+  background-image: none;
+}
+.sky-menu button:hover { translate: none; box-shadow: none; }
+.sky-menu button[aria-checked='true'] { background-color: var(--lavender); }
+.swatch-dot {
+  flex: none;
+  width: 1.45rem;
+  height: 1.45rem;
+  border: 2.5px solid var(--grape);
+  border-radius: 50%;
+  background: linear-gradient(var(--top), var(--bottom));
+}
+.sky-menu button[aria-checked='true'] .swatch-dot { box-shadow: 0 0 0 3px var(--cloud), 0 0 0 5.5px var(--fly-red); }
+
+/* Night flight: the dark question bubble needs a light rim to stand off the sky. */
+[data-sky='night'] .you { box-shadow: 0 0 0 2.5px rgb(255 255 255 / 0.8); }
+
 button, a.button {
   font: 800 var(--step-0) / 1 var(--ui);
   color: var(--grape);
@@ -221,23 +274,79 @@ button.other {
 button.other:hover { background-color: color-mix(in srgb, var(--tint) 48%, white); rotate: -1.5deg; box-shadow: 0 5px 0 var(--grape); }
 button.other:active { translate: 0 2px; box-shadow: 0 1px 0 var(--grape); }
 
-/* Health-bar style neuron meter. */
-.meter {
-  height: 1.3rem;
+/* Loading: a jelly bar. Candy stripes, a gloss stripe on top, the percentage riding in the middle. */
+.say.boot { animation: pop-in 0.3s var(--spring) both; }
+.jelly {
+  position: relative;
+  height: 1.9rem;
   border: var(--edge);
   border-radius: 999px;
   background: var(--lavender);
+  box-shadow: inset 0 3px 0 rgb(46 36 87 / 0.08), 0 4px 0 var(--grape);
   overflow: hidden;
 }
-.meter-fill {
+.jelly-fill {
+  position: relative;
   height: 100%;
-  min-width: 1.2rem;
   border-radius: 999px;
-  background: repeating-linear-gradient(-45deg, var(--sun) 0 10px, #ffb300 10px 20px);
-  background-size: 28px 28px;
-  transition: width 0.15s ease-out;
+  background: repeating-linear-gradient(-45deg, var(--sun) 0 12px, #ffb300 12px 24px);
+  background-size: 34px 34px;
+  box-shadow: inset 0 -4px 0 rgb(46 36 87 / 0.12);
+  transition: width 0.7s var(--spring);
   animation: stripes 0.6s linear infinite;
 }
+.jelly-fill::after {
+  content: '';
+  position: absolute;
+  inset: 3px 10px auto;
+  height: 32%;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.55);
+}
+.jelly-percent {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font: 800 0.875rem / 1 var(--ui);
+  font-variant-numeric: tabular-nums;
+}
+/* How long a sleeping server takes is unknown: a blob sweeps back and forth instead of a fake percentage. */
+/* Thinking: the bar follows the words; once all are read it eases on slowly while the answer is written. */
+.jelly.think { margin: 0 0 0.6rem; }
+.jelly.think .jelly-fill { transition: width 0.35s var(--spring); }
+.jelly.think.choosing .jelly-fill { transition: width 2.6s cubic-bezier(0.2, 0.7, 0.3, 1); }
+.jelly.unknown .jelly-fill { width: 36%; animation: stripes 0.6s linear infinite, sweep 1.2s ease-in-out infinite alternate; }
+
+/* While she reads: the live brainwave, one point per step through the connectome. */
+.wave {
+  position: relative;
+  height: 3.6rem;
+  margin: 0 0 0.6rem;
+  background: var(--lavender);
+  border: var(--edge);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.wave svg { display: block; width: 100%; height: 100%; }
+.wave-area { fill: color-mix(in srgb, var(--sun) 45%, transparent); }
+.wave-line { fill: none; stroke: var(--grape); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.wave-head {
+  position: absolute;
+  width: 0.7rem;
+  height: 0.7rem;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: var(--fly-red);
+  border: 2px solid var(--grape);
+  transition: left 0.12s linear, top 0.12s var(--spring);
+}
+
+/* Bouncing dots after "let me think". */
+.dots { display: inline-flex; gap: 0.16em; margin-left: 0.2em; }
+.dots i { width: 0.3em; height: 0.3em; border-radius: 50%; background: currentColor; animation: dot 0.9s ease-in-out infinite; }
+.dots i:nth-child(2) { animation-delay: 0.15s; }
+.dots i:nth-child(3) { animation-delay: 0.3s; }
 .meter-label { margin: 0.6rem 0 0; color: var(--grape-soft); font-weight: 500; }
 .meter-label strong { color: var(--grape); font-weight: 800; font-variant-numeric: tabular-nums; }
 
@@ -432,6 +541,8 @@ button.link:active { transform: none; }
 @keyframes pin-in { from { opacity: 0; scale: 0.3; } }
 @keyframes bob { to { transform: translateY(-4px); } }
 @keyframes stripes { to { background-position: 28px 0; } }
+@keyframes sweep { from { translate: -15% 0; } to { translate: 195% 0; } }
+@keyframes dot { 0%, 60%, 100% { translate: 0 0; } 30% { translate: 0 -0.35em; } }
 @keyframes letter-bob { 50% { translate: 0 -3px; rotate: -3deg; } }
 @keyframes letter-think { from { translate: 0 1px; rotate: -5deg; } to { translate: 0 -3px; rotate: 5deg; } }
 @keyframes letter-talk { from { scale: 1 1; } to { scale: 1.08 0.9; translate: 0 2px; } }
@@ -448,7 +559,8 @@ button.link:active { transform: none; }
 
 @media (max-width: 30rem) {
   .mark { font-size: 1.45rem; white-space: nowrap; -webkit-text-stroke-width: 5px; }
-  .tools { gap: 0.35rem; }
+  .tools { gap: 0.3rem; }
+  button.swatch { width: 2rem; height: 2rem; }
   button.chip, a.chip { font-size: 0.8125rem; padding: 0.5em 0.75em; white-space: nowrap; }
   .chip .long { display: none; }
   .chip .short { display: inline; }

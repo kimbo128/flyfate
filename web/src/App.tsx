@@ -6,10 +6,15 @@ import { Scene } from './brain/Scene'
 import { ask, fetchOthers, fetchShared, markShared, saveToArchive, whoAmI, type OtherQuestion, type Reading }
   from './oracle/client'
 import { chime, isMuted, pop, setMuted, startBuzz, stopBuzz, voice } from './sfx'
+import { SKIES, setSky, useSky, type Sky } from './skies'
 import { cancelClip, finishClip, setClipText, startClip, videoType } from './video'
 
 const EXAMPLES = ['Should I text them back?', 'Pizza or sushi tonight?', 'Is it time to quit my job?', 'Should I adopt a cat?']
 const NEURONS = 166700
+// The brainwave while Melanie reads: this many steps fit across the box.
+const WAVE = 40
+// What the loading bar says as the brain comes together.
+const BOOT = ['Unpacking 166,700 neurons', 'Plugging in 25.6 million connections', 'Stretching my wings']
 const CHARS_PER_SECOND = 38
 // The video card keeps recording this long once the verdict is on screen.
 const VIDEO_HOLD_MS = 3500
@@ -104,6 +109,11 @@ export default function App() {
   const [typed, setTyped] = useState(0)
   const [streamDone, setStreamDone] = useState(false)
   const [active, setActive] = useState(0)
+  // Neurons buzzing per step, for the brainwave.
+  const [wave, setWave] = useState<number[]>([])
+  // Real progress while she reads: steps done of the question's tokens (0 = not known, e.g. demo mode).
+  const [questionWords, setQuestionWords] = useState(0)
+  const [readSteps, setReadSteps] = useState(0)
   const [reading, setReading] = useState<Reading[]>([])
   // Brain tour: which line of the reading the camera has flown to (-1 = none).
   const [tour, setTourState] = useState(-1)
@@ -278,6 +288,9 @@ export default function App() {
     setShareId(null)
     setFromLink(false)
     setActive(0)
+    setWave([])
+    setQuestionWords(0)
+    setReadSteps(0)
     setReading([])
     setNotice(null)
     setInLine(0)
@@ -288,6 +301,7 @@ export default function App() {
     startBuzz()
     cancel.current = ask(q, {
       onQueue: setInLine,
+      onMeta: setQuestionWords,
       onLimit: (message, retryAfter) => {
         // Back to the question box, question kept, with a clear notice and a countdown.
         stopBuzz()
@@ -300,6 +314,10 @@ export default function App() {
       onStep: (p, n) => {
         setInLine(0)
         setActive(n)
+        if (p === 'reading') {
+          setWave((w) => [...w.slice(1 - WAVE), n])
+          setReadSteps((c) => c + 1)
+        }
         if (p === 'speaking' && brain.phase === 'reading') {
           stopBuzz()
           setPhase('speaking')
@@ -436,6 +454,7 @@ export default function App() {
             ))}
           </span>
           <nav className="tools">
+            <SkyPicker />
             <a className="button chip" href="/answers">Answers</a>
             <button className="chip" onClick={toggleSound} aria-pressed={!muted}>{muted ? 'Sound off' : 'Sound on'}</button>
             <button className="chip" onClick={() => about.current?.showModal()}><span className="long">How it works</span><span className="short">About</span></button>
@@ -450,13 +469,7 @@ export default function App() {
 
             {phase === 'idle' && !loaded && (
               <>
-                <p className="say">Waking up my brain…</p>
-                <div className="meter" role="progressbar" aria-valuenow={Math.round(progress)} aria-valuemin={0} aria-valuemax={100}>
-                  <div className="meter-fill" style={{ width: `${service === 'warming' ? 100 : progress}%` }} />
-                </div>
-                {service === 'warming' && (
-                  <p className="meter-label">I was napping. Waking up all 166,700 neurons takes a few seconds.</p>
-                )}
+                <BootMeter progress={progress} warming={service === 'warming'} />
               </>
             )}
 
@@ -509,11 +522,10 @@ export default function App() {
 
             {phase === 'reading' && inLine === 0 && (
               <>
-                <p className="say">Hmm, let me think…</p>
-                <div className="meter" role="img" aria-label={`${active.toLocaleString('en')} neurons buzzing`}>
-                  <div className="meter-fill" style={{ width: `${Math.min(100, (active / NEURONS) * 100 * 2)}%` }} />
-                </div>
-                <p className="meter-label"><strong>{active.toLocaleString('en')}</strong> of my {NEURONS.toLocaleString('en')} neurons are buzzing</p>
+                <p className="say">Hmm, let me think<span className="dots" aria-hidden><i /><i /><i /></span></p>
+                <BrainWave values={wave} />
+                <ThinkMeter done={readSteps} words={questionWords} />
+                <p className="meter-label"><strong>{active.toLocaleString('en')}</strong> of my {NEURONS.toLocaleString('en')} neurons buzzing right now</p>
               </>
             )}
 
@@ -639,6 +651,104 @@ export default function App() {
         <form method="dialog"><button className="big">Got it</button></form>
       </dialog>
     </>
+  )
+}
+
+// Loading: a jelly bar with what is happening right now. While a sleeping server wakes, how long it takes is
+// unknown, so the bar sweeps instead of pretending to be full.
+function BootMeter({ progress, warming }: { progress: number; warming: boolean }) {
+  const percent = Math.round(progress)
+  const line = warming ? 'I was napping. Waking up all my neurons' : BOOT[Math.min(BOOT.length - 1, Math.floor(percent / 34))]
+  return (
+    <>
+      <p className="say boot" key={line}>{line}<span className="dots" aria-hidden><i /><i /><i /></span></p>
+      <div className={warming ? 'jelly unknown' : 'jelly'} role="progressbar" aria-label="Loading Melanie's brain"
+        aria-valuemin={0} aria-valuemax={100} aria-valuenow={warming ? undefined : percent}>
+        <div className="jelly-fill" style={warming ? undefined : { width: `${Math.max(8, percent)}%` }} />
+        {!warming && <span className="jelly-percent">{percent}%</span>}
+      </div>
+    </>
+  )
+}
+
+// Real progress while Melanie thinks: one step per word (token) of the question, then a stretch while the
+// answer is written, which has no steps to count, so the bar eases on towards the end.
+function ThinkMeter({ done, words }: { done: number; words: number }) {
+  const choosing = words > 0 && done >= words
+  const width = !words ? undefined : choosing ? 94 : 6 + (done / words) * 64
+  const label = !words ? 'Reading your question' : choosing ? 'Choosing my words' : `Reading word ${done + 1} of ${words}`
+  return (
+    <div className={`jelly think${!words ? ' unknown' : ''}${choosing ? ' choosing' : ''}`} role="progressbar"
+      aria-label={label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={width && Math.round(width)}>
+      <div className="jelly-fill" style={width ? { width: `${width}%` } : undefined} />
+      <span className="jelly-percent">{label}</span>
+    </div>
+  )
+}
+
+// While Melanie reads: a live brainwave, one point per step through the connectome, written left to right.
+function BrainWave({ values }: { values: number[] }) {
+  // Scaled between the quietest and the busiest step so far: the swings are what's interesting, and every
+  // step moves thousands of neurons anyway.
+  const max = Math.max(1, ...values)
+  const min = Math.min(max, ...values)
+  const range = Math.max(max - min, max * 0.1)
+  const points = values.map((v, i) => [(i / (WAVE - 1)) * 200, 46 - ((v - min) / range) * 36] as const)
+  const line = points.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ')
+  const last = points[points.length - 1]
+  return (
+    <div className="wave" aria-hidden>
+      <svg viewBox="0 0 200 52" preserveAspectRatio="none">
+        {points.length > 1 && (
+          <>
+            <polygon className="wave-area" points={`0,52 ${line} ${last[0].toFixed(1)},52`} />
+            <polyline className="wave-line" points={line} />
+          </>
+        )}
+      </svg>
+      {/* The pen, outside the stretched SVG so it stays round. */}
+      {last && <span className="wave-head" style={{ left: `${last[0] / 2}%`, top: `${(last[1] / 52) * 100}%` }} />}
+    </div>
+  )
+}
+
+// The sky behind Melanie: a round swatch in the bar, a small menu of skies. Remembered on this device.
+function SkyPicker() {
+  const sky = useSky()
+  const [open, setOpen] = useState(false)
+  const box = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!open) return
+    const close = (e: Event) => {
+      if (e instanceof KeyboardEvent ? e.key === 'Escape' : !box.current?.contains(e.target as Node)) setOpen(false)
+    }
+    addEventListener('pointerdown', close)
+    addEventListener('keydown', close)
+    return () => {
+      removeEventListener('pointerdown', close)
+      removeEventListener('keydown', close)
+    }
+  }, [open])
+  const tint = (s: Sky) => ({ '--top': s.top, '--bottom': s.bottom }) as CSSProperties
+  return (
+    <div className="sky-pick" ref={box}>
+      <button className="chip swatch" style={tint(sky)} onClick={() => setOpen((o) => !o)}
+        aria-label={`Sky: ${sky.name}. Change the sky`} aria-expanded={open} aria-haspopup="menu" />
+      {open && (
+        <div className="sky-menu" role="menu" aria-label="Sky">
+          {SKIES.map((s) => (
+            <button key={s.id} role="menuitemradio" aria-checked={s.id === sky.id} style={tint(s)}
+              onClick={() => {
+                setSky(s.id)
+                setOpen(false)
+              }}>
+              <span className="swatch-dot" />
+              {s.name}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
 

@@ -16,6 +16,8 @@ export type OracleEvents = {
   onToken: (text: string) => void
   // `id` is the answer's share link (/o/{id}); none for answers that aren't shared (serious topics, offline).
   onDone: (answer: string, reading: Reading[], id?: string) => void
+  // How many reading steps the question takes (one per token), sent before the first step.
+  onMeta?: (words: number) => void
   // Waiting behind other visitors; position 1 = next.
   onQueue?: (position: number) => void
   // Refused by a rate limit or a full queue: a message for the visitor and seconds until they can ask again.
@@ -97,6 +99,11 @@ export function ask(question: string, events: OracleEvents) {
     applyFrame(step.regions, decode(step.beads))
     events.onStep(step.phase, step.active)
     if (step.text) events.onToken(step.text)
+  })
+  source.addEventListener('meta', (e) => {
+    received = true
+    const words = (JSON.parse((e as MessageEvent).data) as { words?: number }).words
+    if (words) events.onMeta?.(words)
   })
   source.addEventListener('queue', (e) => {
     received = true

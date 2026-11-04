@@ -7,7 +7,7 @@ import { AgXToneMapping, CanvasTexture, PerspectiveCamera, SRGBColorSpace, Vecto
 import { brain, type Phase } from './activity'
 import { Brain } from './Brain'
 import { Fly } from './Fly'
-import { palette } from '../palette'
+import { useSky as useSkyChoice, type Sky } from '../skies'
 import { feed, recording } from '../video'
 
 // Camera distance per phase. Reading pushes in and slowly orbits while Melanie loops, the verdict pulls back.
@@ -66,22 +66,22 @@ function Rig({ reducedMotion }: { reducedMotion: boolean }) {
   return null
 }
 
-// The sky from the page, painted into the scene so post-processing sees an opaque background.
-function useSky() {
+// The visitor's sky (skies.ts), painted into the scene so post-processing sees an opaque background.
+function useSkyTexture(sky: Sky) {
   return useMemo(() => {
     const c = document.createElement('canvas')
     c.width = 4
     c.height = 512
     const g = c.getContext('2d')!
     const grad = g.createLinearGradient(0, 0, 0, 512)
-    grad.addColorStop(0, palette.skyTop)
-    grad.addColorStop(1, palette.skyBottom)
+    grad.addColorStop(0, sky.top)
+    grad.addColorStop(1, sky.bottom)
     g.fillStyle = grad
     g.fillRect(0, 0, 4, 512)
     const tex = new CanvasTexture(c)
     tex.colorSpace = SRGBColorSpace
     return tex
-  }, [])
+  }, [sky])
 }
 
 // A soft blob shadow under the brain. (drei's ContactShadows renders the painted sky background into its
@@ -126,6 +126,16 @@ function ClipFeed() {
   return null
 }
 
+// The painted sky as the scene's background, swapped whenever the visitor picks another sky.
+function SkyBackground({ texture }: { texture: CanvasTexture }) {
+  const scene = useThree((s) => s.scene)
+  useEffect(() => {
+    scene.background = texture
+    return () => texture.dispose()
+  }, [scene, texture])
+  return null
+}
+
 // Mounts only once everything inside the Suspense boundary has loaded.
 function Ready({ onReady }: { onReady: () => void }) {
   useEffect(onReady, [onReady])
@@ -133,13 +143,13 @@ function Ready({ onReady }: { onReady: () => void }) {
 }
 
 // A studio for vinyl toys, built from light panels (no HDR download): warm key, cool fill, pink rim.
-function Studio() {
+function Studio({ sky }: { sky: Sky }) {
   return (
     <Environment resolution={256} frames={1}>
       <Lightformer form="rect" intensity={3.2} color="#fff4e6" position={[-3, 4, 4]} scale={[6, 4, 1]} />
       <Lightformer form="rect" intensity={1.6} color="#d6ecff" position={[4, 1, 3]} scale={[4, 5, 1]} />
       <Lightformer form="ring" intensity={2.2} color="#ffd3ec" position={[0, 2, -5]} scale={4} />
-      <Lightformer form="rect" intensity={1.2} color={palette.skyBottom} position={[0, -4, 0]} rotation-x={Math.PI / 2} scale={[10, 10, 1]} />
+      <Lightformer form="rect" intensity={1.2} color={sky.bottom} position={[0, -4, 0]} rotation-x={Math.PI / 2} scale={[10, 10, 1]} />
     </Environment>
   )
 }
@@ -149,7 +159,8 @@ type SceneProps = { reducedMotion: boolean; talking: number; focus: number; onRe
 export function Scene({ reducedMotion, talking, focus, onReady }: SceneProps) {
   // Full effects by default; PerformanceMonitor steps down on devices that can't keep up.
   const [quality, setQuality] = useState(1)
-  const sky = useSky()
+  const choice = useSkyChoice()
+  const sky = useSkyTexture(choice)
   const pixelRatio = Math.min(window.devicePixelRatio, quality < 1 ? 1.25 : 2)
   return (
     <Canvas
@@ -157,13 +168,13 @@ export function Scene({ reducedMotion, talking, focus, onReady }: SceneProps) {
       dpr={pixelRatio}
       camera={{ fov: FOV, position: [0, 0.6, 6], near: 0.05, far: 50 }}
       gl={{ antialias: false, powerPreference: 'high-performance', toneMapping: AgXToneMapping, toneMappingExposure: 1.15 }}
-      scene={{ background: sky }}
       aria-hidden
     >
       <PerformanceMonitor onDecline={() => setQuality(0.5)} onIncline={() => setQuality(1)} flipflops={3} />
       <ambientLight intensity={0.35} />
       <directionalLight position={[-2.5, 4, 4]} intensity={1.4} />
-      <Studio />
+      <SkyBackground texture={sky} />
+      <Studio sky={choice} />
       <Suspense fallback={null}>
         <Brain pixelRatio={pixelRatio} quality={quality} focus={focus} />
         <Fly talking={talking} />

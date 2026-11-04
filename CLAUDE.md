@@ -140,6 +140,13 @@ noch `fly-oracle`/`fly_oracle_inference`.
   Bonbonfarben pro Hirnregion in `regions.ts`. `styles.css` und `palette.ts` synchron halten.
 - Schrift: Bagel Fat One (Logo, Namensschild), M PLUS Rounded 1c (UI). UI-Sprache Englisch.
 - Dialogbox mit Schreibmaschine + Piepsern, gedrueckte Buttons, Sticker fuer die Hirn-Lesung.
+- Laden/Denken in der Dialogbox: Jelly-Balken (`BootMeter`) mit Prozent und wechselndem Satz; schlafender Server
+  = wischender Balken statt Fake-Prozent. Beim Denken echter Fortschritt: `meta.words` (Token der Frage) ->
+  "Reading word N of M", danach "Choosing my words" (Generierung hat keine Schritte, Balken gleitet auf 94 %).
+  Dazu Live-Hirnwelle (`BrainWave`, min-max-skaliert). Die Neuronenzahl ist pro Schritt, kein Fortschritt.
+- Himmel waehlbar (`skies.ts`, localStorage `flyfate-sky`): Daydream, Golden hour, Bubblegum, Meadow, Night flight.
+  Gilt fuer CSS (`--sky-top/--sky-bottom`, `data-sky`), 3D-Hintergrund (`SkyBackground`, das `scene`-Prop der
+  Canvas wird nur einmal gelesen) und Video. Server-Seiten und Teilen-Karten bleiben beim Standard-Himmel.
 - "Digital Tactility" (Trend 2026/27, Recherche 2026-11-04): Federkurve `--spring` (CSS `linear()`) fuer alles,
   was auf Beruehrung reagiert; Buttons als Vinyl mit Glanz (`--gloss`), Squash beim Druecken (`translate`/`scale`,
   nicht `transform`). Signatur: Wortmarke denkt mit (Buchstaben-Spans, Animation je `data-phase`). Antwort

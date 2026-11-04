@@ -4,6 +4,7 @@
 // Scene.tsx). We crop around the brain, lay the question, the answer and the verdict over it in the site's look,
 // draw it all onto a 720x1280 canvas and record that canvas with MediaRecorder. Nothing leaves the device.
 import { palette } from './palette'
+import { getSky } from './skies'
 import { audioTrack } from './sfx'
 
 export type ClipText = {
@@ -160,8 +161,8 @@ function fixMp4Duration(buffer: ArrayBuffer) {
 
 function draw(g: CanvasRenderingContext2D, brainImage: HTMLCanvasElement) {
   const sky = g.createLinearGradient(0, 0, 0, H)
-  sky.addColorStop(0, palette.skyTop)
-  sky.addColorStop(1, palette.skyBottom)
+  sky.addColorStop(0, getSky().top)
+  sky.addColorStop(1, getSky().bottom)
   g.fillStyle = sky
   g.fillRect(0, 0, W, H)
   g.fillStyle = 'rgba(255,255,255,0.45)'
@@ -170,7 +171,7 @@ function draw(g: CanvasRenderingContext2D, brainImage: HTMLCanvasElement) {
   // Header: the wordmark and what this is.
   outlined(g, 'FlyFate', W / 2, 92, `66px ${DISPLAY}`, '#fff', 11)
   g.font = `800 25px ${UI}`
-  g.fillStyle = palette.grape
+  g.fillStyle = getSky().dark ? '#fff' : palette.grape // the night sky needs light type
   g.textAlign = 'center'
   g.fillText('I asked a real fruit fly brain', W / 2, 140)
 
@@ -239,7 +240,7 @@ function draw(g: CanvasRenderingContext2D, brainImage: HTMLCanvasElement) {
   // Where to go: the one line that matters on a video.
   g.textAlign = 'center'
   g.font = `800 29px ${UI}`
-  g.fillStyle = palette.grape
+  g.fillStyle = getSky().dark ? '#fff' : palette.grape
   g.fillText('Ask her yourself at flyfate.com', W / 2, H - 46)
 }
 

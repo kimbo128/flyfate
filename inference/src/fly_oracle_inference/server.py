@@ -112,11 +112,13 @@ def frames(question, ip):
 def think(question, ticket):
     """Reading (streamed live) and generating the answer: the part that needs the brain, so it holds the queue."""
     sim, oracle = state['sim'], state['oracle']
-    yield event('meta', {'neurons': sim.reservoir.n, 'edges': int(sim.graph.matrix.nnz), 'beads': len(sim.beads)})
+    question_ids = sim.question_ids(question)
+    # `words`: how many reading steps follow, so the page can show real progress.
+    yield event('meta', {'neurons': sim.reservoir.n, 'edges': int(sim.graph.matrix.nnz), 'beads': len(sim.beads),
+                         'words': len(question_ids)})
     counter.event('ask')
     total, steps = 0, 0  # summed state change per neuron, for the brain reading
     # Reading: the question's tokens pass through the graph, streamed live.
-    question_ids = sim.question_ids(question)
     started = time.perf_counter()
     last = None
     for last in sim.steps(question_ids):
