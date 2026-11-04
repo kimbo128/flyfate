@@ -131,6 +131,12 @@ Asking is private. Every answer has its own link, but it only appears in the arc
 
 Huge thanks to the FlyEM team and everyone who proofread 166,700 neurons by hand. FlyFate is a fan project and is not affiliated with any of them.
 
+## Made by
+
+**[@kimbo128](https://github.com/kimbo128)**, software engineer in Switzerland and author of **[AI Unfiltered](https://arturmarkus.com/?utm_source=github&utm_medium=referral&utm_campaign=flyfate)**, a blog about AI from a developer's point of view, including how projects like this one are built.
+
+[![Blog](https://img.shields.io/badge/blog-arturmarkus.com-2e2457?style=flat-square)](https://arturmarkus.com/?utm_source=github&utm_medium=referral&utm_campaign=flyfate) [![GitHub followers](https://img.shields.io/github/followers/kimbo128?style=flat-square&label=follow&color=ef4537)](https://github.com/kimbo128)
+
 <div align="center">
 <br>
 

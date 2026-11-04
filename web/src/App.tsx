@@ -9,6 +9,9 @@ import { blip, chime, isMuted, pop, setMuted, startBuzz, stopBuzz } from './sfx'
 const EXAMPLES = ['Should I text them back?', 'Pizza or sushi tonight?', 'Is it time to quit my job?', 'Should I adopt a cat?']
 const NEURONS = 166700
 const CHARS_PER_SECOND = 38
+// The maker's credit: subtle, and tagged so the blog's own analytics see where visitors came from.
+const AUTHOR_URL = 'https://arturmarkus.com/?utm_source=flyfate&utm_medium=referral&utm_campaign=credit'
+const REPO_URL = 'https://github.com/kimbo128/flyfate'
 
 function useReducedMotion() {
   const [reduced, setReduced] = useState(() => matchMedia('(prefers-reduced-motion: reduce)').matches)
@@ -498,6 +501,10 @@ export default function App() {
             )}
           </section>
         </main>
+        <p className="credit">
+          A project by <a href={AUTHOR_URL} target="_blank" rel="noopener">AI Unfiltered</a>
+          {' · '}<a href={REPO_URL} target="_blank" rel="noopener">★ Star on GitHub</a>
+        </p>
       </div>
 
       <dialog ref={about} className="about" onClick={(e) => e.target === about.current && about.current?.close()}>
@@ -528,6 +535,10 @@ export default function App() {
           Language model: LFM2.5-1.2B-Instruct, LFM Open License v1.0. Fly model: FLM by nftechie, MIT. Brain data:
           MaleCNS v1.0, FlyEM / HHMI Janelia, University of Cambridge, MRC LMB and Google Research, CC BY 4.0.
           {' '}<a href="/how-it-works">More questions answered</a>. Visits are counted without cookies.
+        </p>
+        <p className="fine">
+          A project by <a href={AUTHOR_URL} target="_blank" rel="noopener">AI Unfiltered</a>, a blog about AI from a
+          developer's view. The code is open: <a href={REPO_URL} target="_blank" rel="noopener">★ FlyFate on GitHub</a>.
         </p>
         <form method="dialog"><button className="big">Got it</button></form>
       </dialog>

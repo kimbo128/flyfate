@@ -173,8 +173,27 @@ button.chip:active, a.chip:active { transform: translateY(2px); box-shadow: 0 1p
 }
 @media (min-width: 46rem) { .you { margin-right: calc((100% - 40rem) / 2); } }
 
+/* The maker's credit, bottom right. Only where there is room: on phones it lives in the About dialog. */
+.credit {
+  display: none;
+  position: fixed;
+  right: var(--gutter);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 1.1rem);
+  margin: 0;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--grape-soft);
+  background: rgb(255 255 255 / 0.6);
+  border-radius: 999px;
+  backdrop-filter: blur(6px);
+}
+.credit a { color: var(--grape); text-decoration: none; }
+.credit a:hover { text-decoration: underline; }
+
 /* Wide screens: the dialog takes a left column so the brain (shifted right by the camera) stays in view. */
 @media (min-aspect-ratio: 6/5) and (min-width: 64rem) {
+  .credit { display: block; }
   .stage { align-items: flex-start; }
   .dialog { width: min(34rem, 42vw); }
   .you { align-self: flex-start; margin: 0 0 0 1.5rem; max-width: min(30rem, 38vw); }
@@ -322,6 +341,7 @@ button.link:active { transform: none; }
 .about h2 { font: 1.75rem / 1.1 var(--display); margin: 0 0 1rem; }
 .about p { margin: 0 0 1rem; }
 .about .fine { font-size: 0.8125rem; color: var(--grape-soft); }
+.about a { color: var(--grape); font-weight: 800; }
 
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 
