@@ -33,7 +33,7 @@ Then Melanie gives her verdict, and a 3D brain shows you where it rattled.
 </tr>
 <tr>
 <td width="50%"><img src="docs/media/tour.png" alt="Brain tour: the camera inside the brain at the noduli, with an explanation card"><br><sub><b>Brain tour.</b> Fly into a region and meet the neurons that led.</sub></td>
-<td width="50%"><img src="docs/media/card.jpg" alt="Share card: the question, Melanie's answer, the decision type and the brain"><br><sub><b>Share cards.</b> Every answer has a stable link and a 1200×630 preview card.</sub></td>
+<td width="50%"><img src="docs/media/card.jpg" alt="Share card: the question, Melanie's answer, the decision type and the brain"><br><sub><b>Share cards and clips.</b> Every answer has a stable link, a 1200×630 preview card and a 9:16 video for TikTok and Reels.</sub></td>
 </tr>
 </table>
 
@@ -69,7 +69,7 @@ flowchart LR
 - **Answers** (`oracle.py`): LFM2.5-1.2B-Instruct as a 4-bit GGUF in llama.cpp, plus the FLM adapter in NumPy. The adapter's correction is applied as `delta @ Eᵀ` through the tied output layer, only for the top 1,024 candidates. The answer is seeded by the question, so it is reproducible.
 - **Server** (`server.py`): FastAPI streams every step as server-sent events and serves the web app. A fair queue keeps one question in the brain at a time; playback happens outside the queue.
 - **Web** (`web/`): React 19, React Three Fiber and drei. Toon-shaded regions that wobble with activity, real neurons as beads, sparks along the strongest connections, a procedural mascot, synthesized sounds. No game engine, no textures.
-- **Sharing** (`share.py`, `archive.py`): stable links per question, server-rendered pages with Open Graph cards drawn in Pillow, and a searchable archive of answers people chose to share.
+- **Sharing** (`share.py`, `archive.py`): stable links per question, server-rendered pages with Open Graph cards drawn in Pillow, and a searchable archive of answers people chose to share. The 9:16 video (`web/src/video.ts`) is recorded right in the browser while Melanie thinks: the real 3D frames, cropped around the brain and composed with the question and verdict, via `MediaRecorder`. Nothing is uploaded.
 
 ## Run it locally
 

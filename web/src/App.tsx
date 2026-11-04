@@ -5,10 +5,13 @@ import { aboutRoi, cellFamily, groupOf, plainName, roiLabel } from './brain/regi
 import { Scene } from './brain/Scene'
 import { ask, fetchShared, markShared, saveToArchive, whoAmI, type Reading } from './oracle/client'
 import { blip, chime, isMuted, pop, setMuted, startBuzz, stopBuzz } from './sfx'
+import { cancelClip, finishClip, setClipText, startClip, videoType } from './video'
 
 const EXAMPLES = ['Should I text them back?', 'Pizza or sushi tonight?', 'Is it time to quit my job?', 'Should I adopt a cat?']
 const NEURONS = 166700
 const CHARS_PER_SECOND = 38
+// The video card keeps recording this long once the verdict is on screen.
+const VIDEO_HOLD_MS = 3500
 // The maker's credit: subtle, and tagged so the blog's own analytics see where visitors came from.
 const AUTHOR_URL = 'https://arturmarkus.com/?utm_source=flyfate&utm_medium=referral&utm_campaign=credit'
 const REPO_URL = 'https://github.com/kimbo128/flyfate'
@@ -120,6 +123,9 @@ export default function App() {
   const [mailReady, setMailReady] = useState(false)
   // The current answer's share link id, and whether this visit arrived through someone's shared link.
   const [shareId, setShareId] = useState<string | null>(null)
+  // The 9:16 video of this answer (video.ts): recorded while Melanie thinks, ready shortly after the verdict.
+  const [video, setVideo] = useState<File | null>(null)
+  const [makingVideo, setMakingVideo] = useState(false)
   const [fromLink, setFromLink] = useState(() => SHARED_PATH.test(location.pathname))
   const cancel = useRef<() => void>(undefined)
   const input = useRef<HTMLInputElement>(null)
@@ -165,6 +171,10 @@ export default function App() {
     chime()
     reading.forEach((_, i) => pop(i))
     if (shareId) history.replaceState(null, '', `/o/${shareId}`)
+    void finishClip(VIDEO_HOLD_MS, `flyfate-${shareId ?? 'answer'}`).then((file) => {
+      setVideo(file)
+      setMakingVideo(false)
+    })
   }, [streamDone, typed, answer, phase, reading, shareId])
 
   // Arriving on a shared link: show that verdict straight away, once the brain is there to light up.
@@ -257,6 +267,9 @@ export default function App() {
     setReading([])
     setNotice(null)
     setInLine(0)
+    setVideo(null)
+    startClip()
+    setMakingVideo(videoType() !== null)
     setPhase('reading')
     startBuzz()
     cancel.current = ask(q, {
@@ -264,6 +277,8 @@ export default function App() {
       onLimit: (message, retryAfter) => {
         // Back to the question box, question kept, with a clear notice and a countdown.
         stopBuzz()
+        cancelClip()
+        setMakingVideo(false)
         setNow(Date.now())
         setNotice({ message, until: Date.now() + retryAfter * 1000 })
         setPhase('idle')
@@ -289,6 +304,9 @@ export default function App() {
   function again() {
     cancel.current?.()
     stopBuzz()
+    cancelClip()
+    setVideo(null)
+    setMakingVideo(false)
     setDraft('')
     setFromLink(false)
     if (location.pathname !== '/') history.pushState(null, '', '/')
@@ -312,6 +330,26 @@ export default function App() {
     } catch {
       /* share sheet closed */
     }
+  }
+
+  // Phones: straight into the share sheet (TikTok, Instagram, WhatsApp). Elsewhere: a download.
+  async function saveVideo() {
+    if (!video) return
+    if (shareId) markShared(shareId)
+    if (matchMedia('(pointer: coarse)').matches && navigator.canShare?.({ files: [video] })) {
+      try {
+        await navigator.share({ files: [video], title: 'FlyFate', text: shareUrl })
+      } catch {
+        /* share sheet closed */
+      }
+      return
+    }
+    const url = URL.createObjectURL(video)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = video.name
+    link.click()
+    window.setTimeout(() => URL.revokeObjectURL(url), 60_000)
   }
 
   async function copyLink() {
@@ -350,6 +388,19 @@ export default function App() {
   // The decision type: named after the brain system of the region that stood out most.
   const kind = phase === 'verdict' && reading.length ? groupOf(brain.names[reading[0].region]) : null
   const focus = tour >= 0 && reading[tour] ? reading[tour].region : -1
+
+  // What the video card shows over the brain: the same words as on screen.
+  useEffect(() => {
+    setClipText({
+      question,
+      answer: answer.slice(0, typed),
+      kind: kind && { title: kind.kind.title, line: kind.kind.line, color: kind.color },
+      stickers: phase === 'verdict' ? reading.map((r) => {
+        const line = describe(r)
+        return { text: `${line.plain} ${line.buzz}`, color: line.group.color }
+      }) : [],
+    })
+  })
 
   return (
     <>
@@ -488,6 +539,8 @@ export default function App() {
                         {/* The card as an image, for stories and chats that don't unfurl links. */}
                         <a className="button soft" href={`/o/${shareId}.jpg`} download={`flyfate-${shareId}.jpg`}
                           onClick={() => markShared(shareId)}>Save card</a>
+                        {video ? <button className="soft" onClick={saveVideo}>Save video</button>
+                          : makingVideo && <button className="soft" disabled>Making video…</button>}
                       </>
                     )}
                     <button className="soft" onClick={again}>Ask again</button>

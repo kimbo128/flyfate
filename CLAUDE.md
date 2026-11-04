@@ -119,6 +119,12 @@ noch `fly-oracle`/`fly_oracle_inference`.
 - `web/src/brain/Brain.tsx`: Toon-Regionen (wackeln/bouncen bei Aktivitaet), echte Neuronen als Perlen, Funken
 - `web/src/brain/Fly.tsx`: Maskottchen Melanie (prozedural)
 - `web/src/oracle/client.ts`: EventSource-Client; `web/src/sfx.ts`: synthetisierte Sounds
+- `web/src/video.ts`: 9:16-Videokarte (720x1280, 30 fps) im Browser. `Scene.tsx` (`ClipFeed`, useFrame-Prioritaet 2,
+  nach dem Postprocessing) gibt jedes Bild mit Hirnposition weiter; Ausschnitt ums Hirn + Frage/Antwort/Urteil
+  auf 2D-Canvas, `MediaRecorder` (MP4 in Chrome/Safari, WebM in Firefox). Start beim Fragen, Stopp 3,5 s nach dem
+  Urteil -> Button "Save video" (Handy: Share-Sheet, sonst Download). Chrome schreibt die `mdhd`-Laenge falsch,
+  `fixMp4Duration` korrigiert sie. Testen nur headed mit GPU; Playwrights Chromium kann H.264 nicht abspielen
+  (Frames mit Brave pruefen).
 
 ## Design (Cozy-Toy)
 - Farben: Traube #2e2457 (Text, Konturen), Fliegenrot #ef4537, Sonne #ffc83d, Himmel #a8dbff -> #ffe3c7.

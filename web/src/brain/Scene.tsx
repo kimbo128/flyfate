@@ -8,6 +8,7 @@ import { brain, type Phase } from './activity'
 import { Brain } from './Brain'
 import { Fly } from './Fly'
 import { palette } from '../palette'
+import { feed, recording } from '../video'
 
 // Camera distance per phase. Reading pushes in and slowly orbits while Melanie loops, the verdict pulls back.
 const DISTANCE: Record<Phase, number> = { idle: 5.2, reading: 4.3, speaking: 4.7, verdict: 5.0 }
@@ -106,6 +107,25 @@ function GroundShadow() {
   )
 }
 
+// Hands each finished frame to the video card (video.ts), with where the brain is on screen. Runs after the
+// post-processing pass (priority 1), so the canvas holds the final image.
+function ClipFeed() {
+  const centre = useMemo(() => new Vector3(), [])
+  const side = useMemo(() => new Vector3(), [])
+  useFrame(({ gl, camera }) => {
+    // On the brain tour the camera dives into one region: the clip holds its last whole-brain frame instead.
+    if (!recording() || brain.focus >= 0) return
+    const { width, height } = gl.domElement
+    centre.set(0, 0, 0).project(camera)
+    side.setFromMatrixColumn(camera.matrixWorld, 0).project(camera)
+    const x = ((centre.x + 1) / 2) * width
+    const y = ((1 - centre.y) / 2) * height
+    const r = Math.hypot(((side.x + 1) / 2) * width - x, ((1 - side.y) / 2) * height - y)
+    feed(gl.domElement, x, y, r)
+  }, 2)
+  return null
+}
+
 // Mounts only once everything inside the Suspense boundary has loaded.
 function Ready({ onReady }: { onReady: () => void }) {
   useEffect(onReady, [onReady])
@@ -158,6 +178,7 @@ export function Scene({ reducedMotion, talking, focus, onReady }: SceneProps) {
         <SMAA />
         <Vignette offset={0.4} darkness={0.32} />
       </EffectComposer>
+      <ClipFeed />
     </Canvas>
   )
 }
