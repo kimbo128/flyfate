@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(npm run *)", "Bash(npm run *)",
+      "PowerShell(npm test *)", "Bash(npm test *)",
+      "PowerShell(npx playwright test *)", "Bash(npx playwright test *)",
+      "PowerShell(uv run *)", "Bash(uv run *)",
+      "PowerShell(uv sync *)", "Bash(uv sync *)",
+      "PowerShell(pytest *)", "Bash(pytest *)",
+      "PowerShell(railway up --detach --service fly-oracle)", "Bash(railway up --detach --service fly-oracle)",
+      "PowerShell(gh pr merge *)", "Bash(gh pr merge *)"
+    ]
+  }
+}

@@ -1,0 +1,38 @@
+[project]
+name = "fly-oracle-inference"
+version = "0.1.0"
+description = "FlyFate: a real fruit fly connectome answers your questions"
+authors = [
+    { name = "kimbo128" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.162.0",
+    "llama-cpp-python>=0.3.36",
+    "numpy>=2.5.4",
+    "pillow>=13.0.0",
+    "pyarrow>=26.0.1",
+    "scipy>=1.18.1",
+    "tokenizers>=0.23.3",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[project.scripts]
+fly-oracle-inference = "fly_oracle_inference:main"
+
+[build-system]
+requires = ["uv_build>=0.12.18,<0.13.0"]
+build-backend = "uv_build"
+
+[[tool.uv.index]]
+url = "https://abetlen.github.io/llama-cpp-python/whl/cpu"
+
+[dependency-groups]
+dev = [
+    "fast-simplification>=0.2.0",
+    "fonttools>=4.68.0",
+    "networkx>=3.7",
+    "scikit-image>=0.26.0",
+    "scipy>=1.18.1",
+    "trimesh>=5.2.0",
+]

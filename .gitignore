@@ -1,0 +1,35 @@
+# Secrets
+.env
+.env.*
+!.env.example
+# OS / Editor
+Thumbs.db
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+# Claude lokal
+.claude/settings.local.json
+.claude/worktrees/
+# Node
+node_modules/
+dist/
+build/
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+# Modell, Connectom, Downloads (mehrere GB)
+inference/vendor/
+inference/data/
+inference/runs/
+*.safetensors
+*.gguf
+*.npz
+# Small derived brain map that ships with the code
+!inference/assets/*.npz
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+.playwright-mcp/
