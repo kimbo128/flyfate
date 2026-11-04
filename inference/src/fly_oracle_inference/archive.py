@@ -13,6 +13,9 @@ from urllib.parse import urlencode
 from . import share
 
 PER_PAGE = 30
+# The maker's credit in every footer, tagged so the blog's analytics see where visitors came from (as in App.tsx).
+AUTHOR_URL = 'https://arturmarkus.com/?utm_source=flyfate&amp;utm_medium=referral&amp;utm_campaign=credit'
+REPO_URL = 'https://github.com/kimbo128/flyfate'
 
 CSS = """
 :root{--grape:#2e2457;--grape-soft:#5a4f8a;--fly-red:#ef4537;--cloud:#fff;--lavender:#f3efff;--edge:3px solid var(--grape);
@@ -127,7 +130,8 @@ def layout(head, main):
     </header>
     <main>{main}
     </main>
-    <footer>Brain data: MaleCNS v1.0, FlyEM / HHMI Janelia and partners, CC BY 4.0. Answers by LFM2.5 with a fly-brain adapter. Just for fun. <a href="/how-it-works">How it works</a></footer>
+    <footer>Brain data: MaleCNS v1.0, FlyEM / HHMI Janelia and partners, CC BY 4.0. Answers by LFM2.5 with a fly-brain adapter. Just for fun. <a href="/how-it-works">How it works</a><br />
+    A project by <a href="{AUTHOR_URL}" target="_blank" rel="noopener">AI Unfiltered</a> · <a href="{REPO_URL}" target="_blank" rel="noopener">★ Star FlyFate on GitHub</a></footer>
   </body>
 </html>
 '''
