@@ -131,6 +131,13 @@ noch `fly-oracle`/`fly_oracle_inference`.
   Bonbonfarben pro Hirnregion in `regions.ts`. `styles.css` und `palette.ts` synchron halten.
 - Schrift: Bagel Fat One (Logo, Namensschild), M PLUS Rounded 1c (UI). UI-Sprache Englisch.
 - Dialogbox mit Schreibmaschine + Piepsern, gedrueckte Buttons, Sticker fuer die Hirn-Lesung.
+- "Digital Tactility" (Trend 2026/27, Recherche 2026-11-04): Federkurve `--spring` (CSS `linear()`) fuer alles,
+  was auf Beruehrung reagiert; Buttons als Vinyl mit Glanz (`--gloss`), Squash beim Druecken (`translate`/`scale`,
+  nicht `transform`). Signatur: Wortmarke denkt mit (Buchstaben-Spans, Animation je `data-phase`). Antwort
+  wortweise (`.word`), Jelly-Wackeln der Karte beim Urteil (der eine grosse Moment). Feines Korn ueber Himmel und
+  Hirn, nicht ueber Karten. Display-P3-Farben per `@supports`. Cross-Document-View-Transitions (Wortmarke
+  `view-transition-name: mark`) zwischen App und Server-Seiten. Bewusst nicht: Glas ueberall, Custom-Cursor,
+  Scroll-Effekte auf jeder Karte.
 - Verdict: Entscheidungstyp als gestempelte Schlagzeile in der Gruppenfarbe, Sticker mit Klartext + Fachname.
   Sticker antippen = Hirn-Tour (`brain.focus`): Kamera fliegt hin, Rest des Gehirns wird Glas (Huellen-Kontur aus,
   sonst grauer Nebel), Region schlaegt wie ein Herz, ihre echten Neuronen funkeln, Namensschild (drei `Html`),

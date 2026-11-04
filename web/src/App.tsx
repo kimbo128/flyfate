@@ -408,7 +408,13 @@ export default function App() {
         onReady={() => setReady(true)} />
       <div className="shell" data-phase={phase} data-tour={tour >= 0 || undefined}>
         <header className="bar">
-          <span className="mark">FlyFate</span>
+          {/* The wordmark thinks along: each letter is its own toy (styles.css, keyed to the phase). */}
+          <span className="mark">
+            <span className="sr">FlyFate</span>
+            {'FlyFate'.split('').map((c, i) => (
+              <span key={i} aria-hidden style={{ '--i': i } as CSSProperties}>{c}</span>
+            ))}
+          </span>
           <nav className="tools">
             <a className="button chip" href="/answers">Answers</a>
             <button className="chip" onClick={toggleSound} aria-pressed={!muted}>{muted ? 'Sound off' : 'Sound on'}</button>
@@ -478,7 +484,9 @@ export default function App() {
 
             {(phase === 'speaking' || phase === 'verdict') && (
               <p className="say answer">
-                {answer.slice(0, typed)}
+                {/* Each word pops in as it starts; the typewriter still fills it letter by letter. */}
+                {answer.slice(0, typed).split(/(\s+)/).map((part, i) =>
+                  /^\s*$/.test(part) ? part : <span className="word" key={i}>{part}</span>)}
                 {phase === 'speaking' && <span className="caret" />}
               </p>
             )}
