@@ -29,6 +29,16 @@ PROFANE = re.compile(
     r'\b(fuck\w*|shit\w*|cunts?|dicks?|cocks?|puss(y|ies)|porn\w*|sex\w*|nazis?|hitler|nigg\w*|fag\w*|'
     r'retard\w*|whores?|sluts?|bitch\w*|rap(e|ed|ist)|tits?|boobs?|nude\w*|naked)\b', re.I)
 
+# What the answer text may not contain: emoji (the card and video fonts have none, they'd come out as boxes),
+# their joiners and variation selectors, and the replacement character a half-decoded multi-token emoji leaves.
+UNPRINTABLE = re.compile('[\ufffd\u200d\ufe0e\ufe0f\u2600-\u27bf\u2b00-\u2bff\U0001f000-\U0001faff]')
+
+
+def printable(text):
+    """Answer text without emoji, with the gap an emoji leaves closed up."""
+    return re.sub(r' {2,}', ' ', UNPRINTABLE.sub('', text))
+
+
 GRAPE, GRAPE_SOFT, FLY_RED, WHITE = (46, 36, 87), (90, 79, 138), (239, 69, 55), (255, 255, 255)
 SKY_TOP, SKY_BOTTOM = (168, 219, 255), (255, 227, 199)
 W, H = 1200, 630
@@ -70,6 +80,10 @@ class Store:
             for oid, reading in self.db.execute('SELECT id, reading FROM oracles WHERE kind IS NULL').fetchall():
                 found = decision(json.loads(reading))
                 self.db.execute('UPDATE oracles SET kind = ? WHERE id = ?', (found and found['id'], oid))
+            # Answers from before printable(): emoji out, so old cards and pages don't show boxes.
+            for oid, answer in self.db.execute('SELECT id, answer FROM oracles').fetchall():
+                if UNPRINTABLE.search(answer):
+                    self.db.execute('UPDATE oracles SET answer = ? WHERE id = ?', (printable(answer).strip(), oid))
             self.db.execute('CREATE INDEX IF NOT EXISTS public_by_date ON oracles (indexable, shared, created)')
             self.db.commit()
 

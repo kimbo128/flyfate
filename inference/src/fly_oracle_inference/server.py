@@ -147,8 +147,14 @@ def speak(question, answer, total, steps):
     tokens = [t for t, _ in answer]
     spoken = ''
     for k, (_, change) in enumerate(answer):
-        text = sim.tokenizer.decode(tokens[:k + 1])
-        piece, spoken = text[len(spoken):], text
+        raw = sim.tokenizer.decode(tokens[:k + 1])
+        # An emoji spans several tokens: until it is complete, the decoded text ends in a replacement character.
+        # Hold the piece back until then, and drop emoji altogether (share.printable).
+        text = share.printable(raw)
+        if raw.endswith('\ufffd') or not text.startswith(spoken):
+            piece = ''
+        else:
+            piece, spoken = text[len(spoken):], text
         total, steps = total + change, steps + 1
         yield event('step', {'phase': 'speaking', 'text': piece, **encode(sim.frame(change))})
         time.sleep(PLAYBACK_SECONDS)
