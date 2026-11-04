@@ -4,6 +4,7 @@
 // Scene.tsx). We crop around the brain, lay the question, the answer and the verdict over it in the site's look,
 // draw it all onto a 720x1280 canvas and record that canvas with MediaRecorder. Nothing leaves the device.
 import { palette } from './palette'
+import { audioTrack } from './sfx'
 
 export type ClipText = {
   question: string
@@ -19,8 +20,10 @@ const BRAIN = 760 // the brain's square on the card
 const GRAPE_SOFT = '#5a4f8a'
 const DISPLAY = "'Bagel Fat One', 'Arial Rounded MT Bold', sans-serif"
 const UI = "'M PLUS Rounded 1c', 'Arial Rounded MT Bold', 'Segoe UI', sans-serif"
-// MP4 first: that is what TikTok and Instagram take. Firefox only records WebM.
-const TYPES = ['video/mp4;codecs=avc1.42E01E', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm']
+// MP4 first: that is what TikTok and Instagram take. Firefox only records WebM. With sound (Melanie's voice,
+// the buzz, the chime) when the browser can mix the audio track in.
+const TYPES = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4;codecs=avc1.42E01E', 'video/mp4',
+  'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp9', 'video/webm']
 
 let canvas: HTMLCanvasElement | null = null
 let ctx: CanvasRenderingContext2D | null = null
@@ -52,7 +55,11 @@ export function startClip() {
   crop = document.createElement('canvas')
   crop.width = crop.height = BRAIN
   chunks = []
-  recorder = new MediaRecorder(canvas.captureStream(FPS), { mimeType: type, videoBitsPerSecond: 5_000_000 })
+  const stream = canvas.captureStream(FPS)
+  // The page's sound bus, recorded even when the page is muted (sfx.ts).
+  const sound = audioTrack()
+  if (sound) stream.addTrack(sound)
+  recorder = new MediaRecorder(stream, { mimeType: type, videoBitsPerSecond: 5_000_000, audioBitsPerSecond: 128_000 })
   recorder.ondataavailable = (e) => e.data.size && chunks.push(e.data)
   // No timeslice: one piece at the end gives an MP4 whose header knows the clip's length (with slices, players
   // showed 4 s for an 8 s clip).

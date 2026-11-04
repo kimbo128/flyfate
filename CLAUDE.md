@@ -121,7 +121,11 @@ noch `fly-oracle`/`fly_oracle_inference`.
 - `web/src/brain/activity.ts`: geteilter Hirnzustand, pro Frame gelesen, kein React-State
 - `web/src/brain/Brain.tsx`: Toon-Regionen (wackeln/bouncen bei Aktivitaet), echte Neuronen als Perlen, Funken
 - `web/src/brain/Fly.tsx`: Maskottchen Melanie (prozedural)
-- `web/src/oracle/client.ts`: EventSource-Client; `web/src/sfx.ts`: synthetisierte Sounds
+- `web/src/oracle/client.ts`: EventSource-Client
+- `web/src/sfx.ts`: synthetisierte Sounds. Melanies Stimme (`voice`): eine gesungene Silbe pro Vokalgruppe, die
+  die Schreibmaschine erreicht, Sagezahn durch zwei Formant-Bandpaesse je Vokal (fuer eine Fliegenkehle hochgesetzt),
+  23-Hz-Fluegel-Vibrato, Tonhoehe faellt ueber den Satz, Frage steigt am Ende, "!" hebt an. Alles laeuft ueber einen
+  Bus -> Lautsprecher (bei "Sound off" Pegel 0) + `MediaStreamDestination` fuer das Video: Clips haben immer Ton.
 - `web/src/video.ts`: 9:16-Videokarte (720x1280, 30 fps) im Browser. `Scene.tsx` (`ClipFeed`, useFrame-Prioritaet 2,
   nach dem Postprocessing) gibt jedes Bild mit Hirnposition weiter; Ausschnitt ums Hirn + Frage/Antwort/Urteil
   auf 2D-Canvas, `MediaRecorder` (MP4 in Chrome/Safari, WebM in Firefox). Start beim Fragen, Stopp 3,5 s nach dem

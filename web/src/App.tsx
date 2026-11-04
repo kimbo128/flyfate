@@ -4,7 +4,7 @@ import { brain, focusRegion, highlight, type Phase } from './brain/activity'
 import { aboutRoi, cellFamily, groupOf, plainName, roiLabel } from './brain/regions'
 import { Scene } from './brain/Scene'
 import { ask, fetchShared, markShared, saveToArchive, whoAmI, type Reading } from './oracle/client'
-import { blip, chime, isMuted, pop, setMuted, startBuzz, stopBuzz } from './sfx'
+import { chime, isMuted, pop, setMuted, startBuzz, stopBuzz, voice } from './sfx'
 import { cancelClip, finishClip, setClipText, startClip, videoType } from './video'
 
 const EXAMPLES = ['Should I text them back?', 'Pizza or sushi tonight?', 'Is it time to quit my job?', 'Should I adopt a cat?']
@@ -152,11 +152,11 @@ export default function App() {
     return () => clearInterval(id)
   }, [notice])
 
-  // Typewriter: reveal the streamed answer letter by letter, with Melanie's blips.
+  // Typewriter: reveal the streamed answer letter by letter, with Melanie's voice (one syllable per vowel group).
   useEffect(() => {
     if (typed >= answer.length) return
     const id = window.setTimeout(() => {
-      blip(answer[typed])
+      voice(answer, typed)
       setTyped((n) => n + 1)
     }, reducedMotion ? 0 : 1000 / CHARS_PER_SECOND)
     return () => clearTimeout(id)
