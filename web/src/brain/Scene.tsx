@@ -161,7 +161,9 @@ export function Scene({ reducedMotion, talking, focus, onReady }: SceneProps) {
   const [quality, setQuality] = useState(1)
   const choice = useSkyChoice()
   const sky = useSkyTexture(choice)
-  const pixelRatio = Math.min(window.devicePixelRatio, quality < 1 ? 1.25 : 2)
+  // Phones: 1.5x is sharp enough on a small screen and saves battery and heat against 3x.
+  const touch = matchMedia('(pointer: coarse)').matches
+  const pixelRatio = Math.min(window.devicePixelRatio, quality < 1 ? 1.25 : touch ? 1.5 : 2)
   return (
     <Canvas
       className="scene"

@@ -43,7 +43,11 @@
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.28s; }
 
 * { box-sizing: border-box; }
+/* Touch: no grey flash on tap, no double-tap zoom delay on controls. */
+button, a, input { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 html, body, #root { height: 100%; margin: 0; }
+/* Follows the visible area as the phone's address bar and keyboard come and go. */
+@supports (height: 100dvh) { body, #root { height: 100dvh; } }
 body {
   overflow: hidden;
   background:
@@ -98,7 +102,11 @@ body::after {
 [data-phase='speaking'] .mark > span[aria-hidden] { animation: letter-talk 0.42s ease-in-out calc(var(--i) * -0.06s) infinite alternate; }
 [data-phase='verdict'] .mark > span[aria-hidden] { animation: letter-hop 0.8s var(--spring) calc(var(--i) * 45ms) both; }
 .tools { display: flex; gap: 0.5rem; }
-.chip .short { display: none; }
+.chip .short, .actions .short { display: none; }
+/* Round icon chip (sound). */
+button.chip.icon { width: 2.35rem; height: 2.35rem; padding: 0; display: grid; place-items: center; }
+.chip.icon svg { width: 1.3rem; height: 1.3rem; fill: currentColor; }
+.chip.icon .stroke { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
 
 /* The sky picker: a round swatch of the current sky, a small menu of the others. */
 .sky-pick { position: relative; }
@@ -560,6 +568,8 @@ button.link:active { transform: none; }
 @media (max-width: 30rem) {
   .mark { font-size: 1.45rem; white-space: nowrap; -webkit-text-stroke-width: 5px; }
   .tools { gap: 0.3rem; }
+  button.chip.icon { width: 2rem; height: 2rem; }
+  .chip.icon svg { width: 1.1rem; height: 1.1rem; }
   button.swatch { width: 2rem; height: 2rem; }
   button.chip, a.chip { font-size: 0.8125rem; padding: 0.5em 0.75em; white-space: nowrap; }
   .chip .long { display: none; }
@@ -583,8 +593,33 @@ button.link:active { transform: none; }
   .tour h2 { font-size: 1.35rem; }
   .tour-about { font-size: 0.9375rem; }
   .tour .measured { font-size: 0.8125rem; margin-bottom: 0.8rem; }
-  .actions { gap: 0.5rem; }
-  .actions button, .actions a.button { padding: 0.7em 1em; font-size: 0.9375rem; }
+  /* The verdict on a phone: everything that would bury the brain gets compact. Stickers in one row that
+     scrolls sideways, the six actions in a three-column grid with short labels. */
+  .say.answer { font-size: 1.2rem; margin-bottom: 0.7rem; }
+  .stickers { flex-wrap: nowrap; overflow-x: auto; margin: 0 -1.2rem 0.5rem; padding: 0.2rem 1.2rem 0.5rem;
+    scroll-snap-type: x mandatory; scrollbar-width: none; }
+  .stickers::-webkit-scrollbar { display: none; }
+  .stickers li { flex: none; scroll-snap-align: start; }
+  .stickers button { white-space: nowrap; }
+  .hint { margin-bottom: 0.7rem; }
+  .actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.45rem; }
+  .actions button, .actions a.button { padding: 0.65em 0.4em; font-size: 0.875rem; text-align: center; }
+  .actions .long { display: none; }
+  .actions .short { display: inline; }
+  .tour .actions { display: flex; }
+  /* On the tour the answer steps aside too: the region and its explanation get the room. */
+  [data-tour] .say.answer { display: none; }
+  .wave { height: 2.8rem; }
+  .meter-label { font-size: 0.875rem; }
+}
+
+/* Touch screens have no hover: without this a tapped button stays lifted. */
+@media (hover: none) {
+  button:hover, a.button:hover { translate: none; background-color: var(--cloud); box-shadow: inset 0 -3px 0 rgb(46 36 87 / 0.1), 0 5px 0 var(--grape); }
+  button.big:hover { background-color: var(--fly-red); }
+  button.chip:hover, a.chip:hover { box-shadow: 0 3px 0 var(--grape); }
+  .stickers button:hover { background-color: color-mix(in srgb, var(--tint) 30%, white); rotate: none; scale: none; }
+  button.other:hover { background-color: color-mix(in srgb, var(--tint) 28%, white); rotate: none; box-shadow: 0 3px 0 var(--grape); }
 }
 
 @media (prefers-reduced-motion: reduce) {

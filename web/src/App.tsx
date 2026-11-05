@@ -419,8 +419,8 @@ export default function App() {
     }
   }
   const archiveButton = collected
-    ? <a className="button soft" href="/me">In your collection</a>
-    : user || mailReady ? <button className="soft" onClick={archiveIt}>Save to archive</button> : null
+    ? <a className="button soft" href="/me"><span className="long">In your collection</span><span className="short">Saved</span></a>
+    : user || mailReady ? <button className="soft" onClick={archiveIt}><span className="long">Save to archive</span><span className="short">Archive</span></button> : null
 
   const words = answer.slice(0, typed).split(' ').length
   // The decision type: named after the brain system of the region that stood out most.
@@ -456,7 +456,14 @@ export default function App() {
           <nav className="tools">
             <SkyPicker />
             <a className="button chip" href="/answers">Answers</a>
-            <button className="chip" onClick={toggleSound} aria-pressed={!muted}>{muted ? 'Sound off' : 'Sound on'}</button>
+            <button className="chip icon" onClick={toggleSound} aria-pressed={!muted} aria-label={muted ? 'Sound is off' : 'Sound is on'}
+              title={muted ? 'Sound off' : 'Sound on'}>
+              <svg viewBox="0 0 24 24" aria-hidden>
+                <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" />
+                {muted ? <path className="stroke" d="M16 9.5l5 5m0-5l-5 5" />
+                  : <path className="stroke" d="M15.5 9a4.2 4.2 0 0 1 0 6M18.2 6.6a7.8 7.8 0 0 1 0 10.8" />}
+              </svg>
+            </button>
             <button className="chip" onClick={() => about.current?.showModal()}><span className="long">How it works</span><span className="short">About</span></button>
           </nav>
         </header>
@@ -589,16 +596,20 @@ export default function App() {
                     <button className="big" onClick={share}>{shared === 'copied' ? 'Copied!' : 'Share'}</button>
                     {shareId && (
                       <>
-                        {archiveButton}
-                        <button className="soft" onClick={copyLink}>{shared === 'link' ? 'Link copied!' : 'Copy link'}</button>
+                        {video ? <button className="soft" onClick={saveVideo}><span className="long">Save video</span><span className="short">Video</span></button>
+                          : makingVideo && <button className="soft" disabled><span className="long">Making video…</span><span className="short">Video…</span></button>}
                         {/* The card as an image, for stories and chats that don't unfurl links. */}
                         <a className="button soft" href={`/o/${shareId}.jpg`} download={`flyfate-${shareId}.jpg`}
-                          onClick={() => markShared(shareId)}>Save card</a>
-                        {video ? <button className="soft" onClick={saveVideo}>Save video</button>
-                          : makingVideo && <button className="soft" disabled>Making video…</button>}
+                          onClick={() => markShared(shareId)}><span className="long">Save card</span><span className="short">Card</span></a>
+                        <button className="soft" onClick={copyLink}>
+                          {shared === 'link'
+                            ? <><span className="long">Link copied!</span><span className="short">Copied!</span></>
+                            : <><span className="long">Copy link</span><span className="short">Link</span></>}
+                        </button>
+                        {archiveButton}
                       </>
                     )}
-                    <button className="soft" onClick={again}>Ask again</button>
+                    <button className="soft" onClick={again}><span className="long">Ask again</span><span className="short">Again</span></button>
                   </div>
                 )}
               </>
