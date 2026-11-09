@@ -58,11 +58,23 @@ app = FastAPI(lifespan=lifespan)
 
 @app.middleware('http')
 async def canonical_host(request: Request, call_next):
-    """One address for search engines and shared links: www.flyfate.com -> flyfate.com, path kept (301)."""
+    """One address per page for search engines and shared links (301, query kept):
+    www.flyfate.com and the Railway address -> PUBLIC_URL, /index.html -> /, a trailing slash -> without.
+    /api/ is left alone: Railway's health check calls it on the internal address."""
     host = request.headers.get('host', '')
-    if host.startswith('www.'):
-        query = f'?{request.url.query}' if request.url.query else ''
-        return RedirectResponse(f'https://{host[4:]}{request.url.path}{query}', status_code=301)
+    path = request.url.path
+    query = f'?{request.url.query}' if request.url.query else ''
+    public = os.environ.get('PUBLIC_URL', '').rstrip('/')
+    canonical = path[:-len('index.html')] if path.endswith('/index.html') else path
+    if len(canonical) > 1 and canonical.endswith('/'):
+        canonical = canonical.rstrip('/') or '/'
+    if not path.startswith('/api/'):
+        if public and host and host != urlparse(public).netloc:
+            return RedirectResponse(f'{public}{canonical}{query}', status_code=301)
+        if host.startswith('www.'):
+            return RedirectResponse(f'https://{host[4:]}{canonical}{query}', status_code=301)
+        if canonical != path:
+            return RedirectResponse(f'{canonical}{query}', status_code=301)
     return await call_next(request)
 
 
